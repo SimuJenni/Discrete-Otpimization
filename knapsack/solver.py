@@ -35,7 +35,7 @@ def solve_it(input_data):
             weight += item.weight
 
     # value, taken = inefficientSolution(capacity, len(items), items,  [0]*len(items))
-    value = DP(capacity, items)
+    value, taken = DP(capacity, items, taken)
     
     # prepare the solution in the specified output format
     output_data = str(value) + ' ' + str(0) + '\n'
@@ -60,21 +60,25 @@ def inefficientSolution(k, j, items, taken):
 
 import numpy as np
 
-def DP(k, items):
-    table = DPtable2(k, items)
-    return table[k][len(items)]
-
-def DPtable(k, items):
+def DP(k, items, taken):
     table =[ [0 for x in range(len(items)+1)] for x in range(k+1)]
     weights = [item.weight for item in items]
     values = [item.value for item in items]
     for item in range(1, len(items)+1):
         for capacity in range(1, k+1):
+            opt1 = table[capacity][item-1]
             if weights[item-1]<=capacity:
-                table[capacity][item] = max(table[capacity][item-1], table[capacity-weights[item-1]+1][item-1]+values[item-1])
+                opt2 = table[capacity-weights[item-1]+1][item-1]+values[item-1]
+                if opt1 >= opt2:
+                    taken[item-1] = 0
+                    table[capacity][item] = opt1
+                else:
+                    taken[item-1] = 1
+                    table[capacity][item] = opt2
             else:
-                table[capacity][item] = table[capacity][item-1]
-    return table
+                taken[item-1] = 0
+                table[capacity][item] = opt1
+    return table[k][len(items)], taken
 
 import sys
 
