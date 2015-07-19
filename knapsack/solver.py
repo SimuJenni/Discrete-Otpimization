@@ -61,22 +61,19 @@ def inefficientSolution(k, j, items, taken):
 import numpy as np
 
 def DP(k, items):
-    table = DPtable(k, items)
+    table = DPtable2(k, items)
     return table[k][len(items)]
-    
+
 def DPtable(k, items):
-    table = np.zeros((k+1, len(items)+1))
+    table =[ [0 for x in range(len(items)+1)] for x in range(k+1)]
     weights = [item.weight for item in items]
     values = [item.value for item in items]
-    it = np.nditer(table, flags=['multi_index'],  order='F', op_flags=['readwrite'])
-    while not it.finished:
-        capacity, item = it.multi_index
-        if item >0:
+    for item in range(1, len(items)+1):
+        for capacity in range(1, k+1):
             if weights[item-1]<=capacity:
-                it[0] = max(table[capacity][item-1], table[capacity-weights[item-1]+1][item-1]+values[item-1])
+                table[capacity][item] = max(table[capacity][item-1], table[capacity-weights[item-1]+1][item-1]+values[item-1])
             else:
-                it[0] = table[capacity][item-1]
-        it.iternext()
+                table[capacity][item] = table[capacity][item-1]
     return table
 
 import sys
