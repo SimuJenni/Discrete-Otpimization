@@ -21,6 +21,7 @@ def solve_it(input_data):
         parts = line.split()
         items.append(Item(i-1, int(parts[0]), int(parts[1])))
 
+        
     # a trivial greedy algorithm for filling the knapsack
     # it takes items in-order until the knapsack is full
     value = 0
@@ -32,12 +33,51 @@ def solve_it(input_data):
             taken[item.index] = 1
             value += item.value
             weight += item.weight
+
+    # value, taken = inefficientSolution(capacity, len(items), items,  [0]*len(items))
+    value = DP(capacity, items)
     
     # prepare the solution in the specified output format
     output_data = str(value) + ' ' + str(0) + '\n'
     output_data += ' '.join(map(str, taken))
     return output_data
 
+# Very inefficient (but optimal!) recursive solution
+def inefficientSolution(k, j, items, taken):
+    if j == 0:
+        return (0, taken)
+    elif items[j-1].weight <= k:
+        opt1 = inefficientSolution(k, j-1, items, taken)
+        opt2 = inefficientSolution(k-items[j-1].weight, j-1, items, taken)
+        if opt1[0]>=opt2[0]+items[j-1].value:
+            taken[j-1] = 0
+            return (opt1[0], taken)
+        else:
+            taken[j-1] = 1
+            return (opt2[0]+items[j-1].value, taken)
+    else:
+        return inefficientSolution(k, j-1, items, taken)
+
+import numpy as np
+
+def DP(k, items):
+    table = DPtable(k, items)
+    return table[k][len(items)]
+    
+def DPtable(k, items):
+    table = np.zeros((k+1, len(items)+1))
+    weights = [item.weight for item in items]
+    values = [item.value for item in items]
+    it = np.nditer(table, flags=['multi_index'],  order='F', op_flags=['readwrite'])
+    while not it.finished:
+        capacity, item = it.multi_index
+        if item >0:
+            if weights[item-1]<=capacity:
+                it[0] = max(table[capacity][item-1], table[capacity-weights[item-1]+1][item-1]+values[item-1])
+            else:
+                it[0] = table[capacity][item-1]
+        it.iternext()
+    return table
 
 import sys
 
