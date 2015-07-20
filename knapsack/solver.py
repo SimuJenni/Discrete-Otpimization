@@ -35,10 +35,10 @@ def solve_it(input_data):
             weight += item.weight
 
     # value, taken = inefficientSolution(capacity, len(items), items,  [0]*len(items))
-    value, taken = DP(capacity, items, taken)
+    value, taken = DP(capacity, items,  [0]*len(items))
     
     # prepare the solution in the specified output format
-    output_data = str(value) + ' ' + str(0) + '\n'
+    output_data = str(value) + ' ' + str(1) + '\n'
     output_data += ' '.join(map(str, taken))
     return output_data
 
@@ -58,27 +58,30 @@ def inefficientSolution(k, j, items, taken):
     else:
         return inefficientSolution(k, j-1, items, taken)
 
-import numpy as np
-
 def DP(k, items, taken):
     table =[ [0 for x in range(len(items)+1)] for x in range(k+1)]
-    weights = [item.weight for item in items]
-    values = [item.value for item in items]
-    for item in range(1, len(items)+1):
+    for item in items:
         for capacity in range(1, k+1):
-            opt1 = table[capacity][item-1]
-            if weights[item-1]<=capacity:
-                opt2 = table[capacity-weights[item-1]+1][item-1]+values[item-1]
+            opt1 = table[capacity][item.index]
+            if item.weight<=capacity:
+                opt2 = table[capacity-item.weight+1][item.index]+item.value
                 if opt1 >= opt2:
-                    taken[item-1] = 0
-                    table[capacity][item] = opt1
+                    table[capacity][item.index+1] = opt1
                 else:
-                    taken[item-1] = 1
-                    table[capacity][item] = opt2
+                    table[capacity][item.index+1] = opt2
             else:
-                taken[item-1] = 0
-                table[capacity][item] = opt1
-    return table[k][len(items)], taken
+                table[capacity][item.index+1] = opt1
+                
+    value = table[k][len(items)]
+    k = capacity
+    for i in range(len(items),0,-1):
+        if table[k][i] == table[k][i-1]:
+            taken[i-1] = 0
+        else:
+            taken[i-1] = 1
+            k -= items[i-1].weight
+            
+    return value, taken
 
 import sys
 
