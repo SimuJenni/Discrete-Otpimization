@@ -21,61 +21,33 @@ def solve_it(input_data):
         parts = line.split()
         items.append(Item(i-1, int(parts[0]), int(parts[1])))
 
-        
-    # a trivial greedy algorithm for filling the knapsack
-    # it takes items in-order until the knapsack is full
-    value = 0
-    weight = 0
-    taken = [0]*len(items)
-
-    for item in items:
-        if weight + item.weight <= capacity:
-            taken[item.index] = 1
-            value += item.value
-            weight += item.weight
-
     # value, taken = inefficientSolution(capacity, len(items), items,  [0]*len(items))
     value, taken = DP(capacity, items,  [0]*len(items))
     
     # prepare the solution in the specified output format
     output_data = str(value) + ' ' + str(1) + '\n'
     output_data += ' '.join(map(str, taken))
-    return output_data
-
-# Very inefficient (but optimal!) recursive solution
-def inefficientSolution(k, j, items, taken):
-    if j == 0:
-        return (0, taken)
-    elif items[j-1].weight <= k:
-        opt1 = inefficientSolution(k, j-1, items, taken)
-        opt2 = inefficientSolution(k-items[j-1].weight, j-1, items, taken)
-        if opt1[0]>=opt2[0]+items[j-1].value:
-            taken[j-1] = 0
-            return (opt1[0], taken)
-        else:
-            taken[j-1] = 1
-            return (opt2[0]+items[j-1].value, taken)
-    else:
-        return inefficientSolution(k, j-1, items, taken)
-
+    return output_data    
+    
 def DP(k, items, taken):
-    table =[ [0 for x in range(len(items)+1)] for x in range(k+1)]
+    solution = [ [False for x in range(len(items)+1) ] for x in range(k+1)]
+    table =[ [0 for x in range(2)] for x in range(k+1)]
     for item in items:
         for capacity in range(1, k+1):
-            opt1 = table[capacity][item.index]
+            opt1 = table[capacity][item.index%2]
             if item.weight<=capacity:
-                opt2 = table[capacity-item.weight+1][item.index]+item.value
+                opt2 = table[capacity-item.weight+1][item.index%2]+item.value
                 if opt1 >= opt2:
-                    table[capacity][item.index+1] = opt1
+                    table[capacity][(item.index+1)%2] = opt1
                 else:
-                    table[capacity][item.index+1] = opt2
+                    table[capacity][(item.index+1)%2] = opt2
+                    solution[capacity][item.index+1] = True
             else:
-                table[capacity][item.index+1] = opt1
+                table[capacity][(item.index+1)%2] = opt1
                 
-    value = table[k][len(items)]
-    k = capacity
+    value = table[k][len(items)%2]
     for i in range(len(items),0,-1):
-        if table[k][i] == table[k][i-1]:
+        if not solution[k][i]:
             taken[i-1] = 0
         else:
             taken[i-1] = 1
